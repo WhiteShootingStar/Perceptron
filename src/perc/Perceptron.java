@@ -18,7 +18,7 @@ public class Perceptron {
 	public static double LEARNING_RATE;
 	public static String ACTIVATION = null;
 	public static String NON_ACTIVATION = null;
-	public final double ERROR_THRESHHOLD = 0.059; // found through testing
+	public final double ERROR_THRESHHOLD = 0.37; // found through testing
 	private Scanner scan = new Scanner(System.in);
 
 	public Perceptron() {
@@ -127,9 +127,9 @@ public class Perceptron {
 					}
 
 				}
-				System.out.println("Out of  " + line_count + "lines , there was guessed " + guessed_activation
+				System.out.println("Out of  " + line_count + " lines , there was guessed " + guessed_activation
 						+ " out of " + activation_count + " activations and " + guessed_non_activation + " out of "
-						+ non_activation_count + " non-activations");
+						+ non_activation_count + " non-activations" + " .The accuracy is " + (double)(guessed_activation+guessed_non_activation)/line_count);
 
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
