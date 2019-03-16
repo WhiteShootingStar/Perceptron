@@ -18,7 +18,7 @@ public class Perceptron {
 	public static double LEARNING_RATE;
 	public static String ACTIVATION = null;
 	public static String NON_ACTIVATION = null;
-	public final double ERROR_THRESHHOLD = 0.06; // found through testing
+	public final double ERROR_THRESHHOLD = 0.059; // found through testing
 	private Scanner scan = new Scanner(System.in);
 
 	public Perceptron() {
@@ -72,6 +72,7 @@ public class Perceptron {
 				}
 				reader.close();
 				System.out.println(Arrays.toString(weights) + " weight wector after " + EPOCH + "  epoch");
+				System.out.println("Error is " + (double) err / lines_count);
 				EPOCH++;
 
 			} while ((double) err / lines_count > ERROR_THRESHHOLD);
@@ -107,6 +108,7 @@ public class Perceptron {
 			String line;
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+				
 				while ((line = reader.readLine()) != null) {
 					line_count++;
 					String[] arr = line.split(",");
@@ -139,70 +141,70 @@ public class Perceptron {
 		}
 	}
 
-	void modifyWeight(Point what) { // modify weight by the formula Weight_vector = Weight_vector + (desired output
+	void modifyWeight(Point inputVector) { // modify weight by the formula Weight_vector = Weight_vector + (desired output
 									// - actual output)*lerning_rate* value_vector
-		// int desiredOutput = Integer.parseInt(what.type);
+		// int desiredOutput = Integer.parseInt(inputVector.type);
 		int desiredOutput = 0;
-		int actualOutput = calculateActualOutput(what);
-		if (what.type.equals(ACTIVATION)) {
+		int actualOutput = calculateActualOutput(inputVector);
+		if (inputVector.type.equals(ACTIVATION)) {
 			desiredOutput = 1;
 		}
-		for (int i = 0; i < what.value_vector.length; ++i) {
-			weights[i] += (desiredOutput - actualOutput) * LEARNING_RATE * what.value_vector[i];
+		for (int i = 0; i < inputVector.value_vector.length; ++i) {
+			weights[i] += (desiredOutput - actualOutput) * LEARNING_RATE * inputVector.value_vector[i];
 		}
 	}
 
-	int calculateActualOutput(Point what) { // calculate output by formula W^T *X >=0? 1:0 where W^T is transposition of
+	int calculateActualOutput(Point inputVector) { // calculate output by formula W^T *X >=0? 1:0 where W^T is transposition of
 											// weight vector and X - values vector
 		double sum = 0;
-		for (int i = 0; i < what.value_vector.length; i++) {
-			sum += what.value_vector[i] * weights[i];
+		for (int i = 0; i < inputVector.value_vector.length; i++) {
+			sum += inputVector.value_vector[i] * weights[i];
 		}
-		// System.out.println(sum + " " + what.toString());
+		// System.out.println(sum + " " + inputVector.toString());
 		return sum > 0 ? 1 : 0;
 	}
 
-	int error(Point what) { // calculate part error by formula |Desired_output-Actual_output|
+	int error(Point inputVector) { // calculate part error by formula |Desired_output-Actual_output|
 		int a = 0;
-		if (what.type.equals(ACTIVATION)) {
+		if (inputVector.type.equals(ACTIVATION)) {
 			a = 1;
 		}
-		return Math.abs(a - calculateActualOutput(what));
+		return Math.abs(a - calculateActualOutput(inputVector));
 	}
 
-	Point makePoint(String[] from_what, int msg_type) { // extracted method to create Point from text file
+	Point makePoint(String[] from_inputVector, int msg_type) { // extracted method to create Point from text file
 		double[] values = null;
 		if (msg_type == 1) {
-			values = new double[from_what.length];
-			for (int i = 0; i < from_what.length - 1; i++) {
-				values[i] = Double.parseDouble(from_what[i]);
+			values = new double[from_inputVector.length];
+			for (int i = 0; i < from_inputVector.length - 1; i++) {
+				values[i] = Double.parseDouble(from_inputVector[i]);
 			}
 			values[values.length - 1] = -1;
 		} else {
-			values = new double[from_what.length + 1];
-			for (int i = 0; i < from_what.length; i++) {
-				values[i] = Double.parseDouble(from_what[i]);
+			values = new double[from_inputVector.length + 1];
+			for (int i = 0; i < from_inputVector.length; i++) {
+				values[i] = Double.parseDouble(from_inputVector[i]);
 			}
 			values[values.length - 1] = -1;
 		}
-		if (from_what[from_what.length - 1] != null) {
-			return new Point(values, from_what[from_what.length - 1]); // create point
+		if (from_inputVector[from_inputVector.length - 1] != null) {
+			return new Point(values, from_inputVector[from_inputVector.length - 1]); // create point
 		} else
 			return new Point(values, "");
 	}
 
-	String printGood(Point what, int type_mes) { // print beautifully
-		int activated = calculateActualOutput(what);
+	String printGood(Point inputVector, int type_mes) { // print beautifully
+		int activated = calculateActualOutput(inputVector);
 		String output = null;
 		if (activated == 1) {
 			output = ACTIVATION;
 		} else
 			output = NON_ACTIVATION;
-		System.out.println(Arrays.toString(what.value_vector));
+		System.out.println(Arrays.toString(inputVector.value_vector));
 		if (type_mes == 0) {
 			return "I guess the type is " + output;
 		} else
-			return "Supposed output should be " + what.type + " and actual output is " + output;
+			return "Supposed output should be " + inputVector.type + " and actual output is " + output;
 
 	}
 
