@@ -18,13 +18,14 @@ public class Perceptron {
 	public static double LEARNING_RATE;
 	public static String ACTIVATION = null;
 	public static String NON_ACTIVATION = null;
-	public final double ERROR_THRESHHOLD = 0.4; // found through testing
+	public final double ERROR_THRESHHOLD = 0.06; // found through testing
+	private Scanner scan = new Scanner(System.in);
 
 	public Perceptron() {
-		Scanner scan = new Scanner(System.in);
+
 		System.out.println("Please enter the learning rate");
 		LEARNING_RATE = scan.nextDouble();
-		scan.close();
+
 	}
 
 	public void learn(String file) {
@@ -40,7 +41,7 @@ public class Perceptron {
 				while ((line = reader.readLine()) != null) {
 					String[] arr = line.split(",");
 
-					Point point = makePoint(arr); // create point
+					Point point = makePoint(arr, 1); // create point
 					if (weights == null) { // initialize weights
 						weights = new double[point.value_vector.length];
 						for (int i = 0; i < point.value_vector.length; i++) {
@@ -61,14 +62,13 @@ public class Perceptron {
 						}
 
 					}
-					// Point point = new Point(values, arr[arr.length - 1]); // create point
-					err += error(point);
 
-					modifyWeight(point);
+					err += error(point);// add errors
+
+					modifyWeight(point); // modify weights
 
 					lines_count++;
-					// System.out.println(Arrays.toString(weights));
-					// System.out.println("Erroe is " + (double) err / lines_count);
+
 				}
 				reader.close();
 				System.out.println(Arrays.toString(weights) + " weight wector after " + EPOCH + "  epoch");
@@ -87,34 +87,66 @@ public class Perceptron {
 	}
 
 	public void test(String file) {
-		String line;
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
-			while ((line = reader.readLine()) != null) {
-				String[] arr = line.split(",");
-				Point point = makePoint(arr);
-				int activated = calculateActualOutput(point);
-				System.out.println(Arrays.toString(point.value_vector));
-				System.out.println("Supposed output should be " + point.type + " and actual output is " + activated);
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
+		int a = -1;
+		System.out.println("Enter 1 to perform on test set, enter 0 to perofrm on your value");
+		a = scan.nextInt();
+
+		if (a == 0) {
+			System.out.println("please enter " + (weights.length - 1) + " values in one raw with comas");
+			String[] arr = scan.next().split(",");
+			Point p = makePoint(arr, a);
+			System.out.println(printGood(p, a));
+		} else {
+			int line_count = 0;
+			int guessed_activation = 0;
+			int guessed_non_activation = 0;
+			int activation_count = 0;
+			int non_activation_count = 0;
+
+			String line;
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+				while ((line = reader.readLine()) != null) {
+					line_count++;
+					String[] arr = line.split(",");
+					Point point = makePoint(arr, a);
+					System.out.println(printGood(point, a));
+					if (point.type.equals(ACTIVATION)) { // calculate guesses
+						activation_count++;
+						if (calculateActualOutput(point) == 1) {
+							guessed_activation++;
+						}
+					} else {
+						non_activation_count++;
+						if (calculateActualOutput(point) == 0) {
+							guessed_non_activation++;
+						}
+					}
+
+				}
+				System.out.println("Out of  " + line_count + "lines , there was guessed " + guessed_activation
+						+ " out of " + activation_count + " activations and " + guessed_non_activation + " out of "
+						+ non_activation_count + " non-activations");
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	void modifyWeight(Point what) { // modify weight by the formula Weight_vector = Weight_vector + (desired output
 									// - actual output)*lerning_rate* value_vector
-		int desiredOutput = Integer.parseInt(what.type);
-
+		// int desiredOutput = Integer.parseInt(what.type);
+		int desiredOutput = 0;
 		int actualOutput = calculateActualOutput(what);
-		// if (what.type.equals(ACTIVATION)) {
-		// desiredOutput = 1;
-		// }
+		if (what.type.equals(ACTIVATION)) {
+			desiredOutput = 1;
+		}
 		for (int i = 0; i < what.value_vector.length; ++i) {
 			weights[i] += (desiredOutput - actualOutput) * LEARNING_RATE * what.value_vector[i];
 		}
@@ -131,17 +163,47 @@ public class Perceptron {
 	}
 
 	int error(Point what) { // calculate part error by formula |Desired_output-Actual_output|
-		return Math.abs(Integer.parseInt(what.type) - calculateActualOutput(what));
-	}
-
-	Point makePoint(String[] from_what) { // extracted method to create Point from text file
-
-		double[] values = new double[from_what.length];
-		for (int i = 0; i < from_what.length; i++) {
-			values[i] = Double.parseDouble(from_what[i]);
+		int a = 0;
+		if (what.type.equals(ACTIVATION)) {
+			a = 1;
 		}
-		values[values.length - 1] = -1;
-
-		return new Point(values, from_what[from_what.length - 1]); // create point
+		return Math.abs(a - calculateActualOutput(what));
 	}
+
+	Point makePoint(String[] from_what, int msg_type) { // extracted method to create Point from text file
+		double[] values = null;
+		if (msg_type == 1) {
+			values = new double[from_what.length];
+			for (int i = 0; i < from_what.length - 1; i++) {
+				values[i] = Double.parseDouble(from_what[i]);
+			}
+			values[values.length - 1] = -1;
+		} else {
+			values = new double[from_what.length + 1];
+			for (int i = 0; i < from_what.length; i++) {
+				values[i] = Double.parseDouble(from_what[i]);
+			}
+			values[values.length - 1] = -1;
+		}
+		if (from_what[from_what.length - 1] != null) {
+			return new Point(values, from_what[from_what.length - 1]); // create point
+		} else
+			return new Point(values, "");
+	}
+
+	String printGood(Point what, int type_mes) { // print beautifully
+		int activated = calculateActualOutput(what);
+		String output = null;
+		if (activated == 1) {
+			output = ACTIVATION;
+		} else
+			output = NON_ACTIVATION;
+		System.out.println(Arrays.toString(what.value_vector));
+		if (type_mes == 0) {
+			return "I guess the type is " + output;
+		} else
+			return "Supposed output should be " + what.type + " and actual output is " + output;
+
+	}
+
 }
