@@ -18,7 +18,7 @@ public class Perceptron {
 	public static double LEARNING_RATE;
 	public static String ACTIVATION = null;
 	public static String NON_ACTIVATION = null;
-	public final double ERROR_THRESHHOLD = 0.37; // found through testing
+	public final double ERROR_THRESHHOLD = 0.06; // found through testing
 	private Scanner scan = new Scanner(System.in);
 
 	public Perceptron() {
@@ -160,7 +160,7 @@ public class Perceptron {
 		for (int i = 0; i < inputVector.value_vector.length; i++) {
 			sum += inputVector.value_vector[i] * weights[i];
 		}
-		// System.out.println(sum + " " + inputVector.toString());
+		
 		return sum > 0 ? 1 : 0;
 	}
 
